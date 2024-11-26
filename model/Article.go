@@ -15,7 +15,21 @@ type Article struct {
 	Img          string `gorm:"type:varchar(100)" json:"img"`
 	CommentCount int    `gorm:"type:int;not null;default:0" json:"comment_count"`
 	ReadCount    int    `gorm:"type:int;not null;default:0" json:"read_count"`
+	// TODO GORM 的 Preload 方法默认使用 INNER JOIN。想使用left join right join，例子：Joins("LEFT JOIN profiles ON users.id = profiles.user_id")
+	// Name         string `gorm:"type:varchar(100);not null" json:"name"`
 }
+
+// 连表三张表
+// var userWithProfileAndAddresses []struct {
+//     User
+//     ProfileBio  string `gorm:"column:profiles.bio"`
+//     AddressCity string `gorm:"column:addresses.city"`
+// }
+// db.Table("users").
+//     Select("users.*, profiles.bio, addresses.city").
+//     Joins("LEFT JOIN profiles ON users.id = profiles.user_id").
+//     Joins("LEFT JOIN addresses ON users.id = addresses.user_id").
+//     Scan(&userWithProfileAndAddresses)
 
 // CreateArt 新增文章
 func CreateArt(data *Article) int {
@@ -52,38 +66,41 @@ func GetArtInfo(id int) (Article, int) {
 }
 
 // GetArt 查询文章列表
-func GetArt(pageSize int, pageNum int) ([]Article, int, int64) {
+func GetArt(pageSize int, pageNum int) ([]Article, int, int64, error) {
 	var articleList []Article
 	var err error
 	var total int64
 
-	err = db.Select("article.id, title, img, created_at, updated_at, `desc`, comment_count, read_count, category.name").Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("Created_At DESC").Joins("Category").Find(&articleList).Error
+	err = db.Preload("Category").Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("Created_At DESC").Joins("join category on category.id = article.cid").Find(&articleList).Error
+
+	// err = db.Preload("Category").Select("article.id, title,cid, `desc`, content, img, comment_count, read_count, created_at, updated_at, category.name as name").Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("Created_At DESC").Joins("join category on category.id = article.cid").Find(&articleList).Error
+
 	// 单独计数
 	db.Model(&articleList).Count(&total)
 	if err != nil {
-		return nil, errmsg.ERROR, 0
+		return nil, errmsg.ERROR, 0, err
 	}
-	return articleList, errmsg.SUCCESS, total
+	return articleList, errmsg.SUCCESS, total, nil
 
 }
 
 // SearchArticle 搜索文章标题
-func SearchArticle(title string, pageSize int, pageNum int) ([]Article, int, int64) {
+func SearchArticle(title string, pageSize int, pageNum int) ([]Article, int, int64, error) {
 	var articleList []Article
 	var err error
 	var total int64
-	err = db.Select("article.id,title, img, created_at, updated_at, `desc`, comment_count, read_count, Category.name").Order("Created_At DESC").Joins("Category").Where("title LIKE ?",
-		title+"%",
-	).Limit(pageSize).Offset((pageNum - 1) * pageSize).Find(&articleList).Error
+
+	err = db.Preload("Category").Where("title LIKE ?", "%"+title+"%").Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("Created_At DESC").Joins("join category on category.id = article.cid").Find(&articleList).Error
+
+	// err = db.Preload("Category").Select("article.id, title, cid, `desc`, content, img, comment_count, read_count, created_at, updated_at, category.name as name").Where("title LIKE ?", "%"+title+"%").Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("Created_At DESC").Joins("join category on category.id = article.cid").Find(&articleList).Error
 	//单独计数
-	db.Model(&articleList).Where("title LIKE ?",
-		title+"%",
-	).Count(&total)
+	// db.Model(&articleList).Where("title LIKE ?", "%"+title+"%").Count(&total)
+	db.Preload("Category").Model(&articleList).Where("title LIKE ?", "%"+title+"%").Count(&total)
 
 	if err != nil {
-		return nil, errmsg.ERROR, 0
+		return nil, errmsg.ERROR, 0, err
 	}
-	return articleList, errmsg.SUCCESS, total
+	return articleList, errmsg.SUCCESS, total, nil
 }
 
 // EditArt 编辑文章
