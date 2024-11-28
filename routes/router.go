@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
-	"github.com/wejectchen/ginblog/api/v1"
+	v1 "github.com/wejectchen/ginblog/api/v1"
 	"github.com/wejectchen/ginblog/middleware"
 	"github.com/wejectchen/ginblog/utils"
 )
@@ -43,6 +43,10 @@ func InitRouter() {
 		后台管理路由接口
 	*/
 	auth := r.Group("api/v1")
+	auth.POST("scan/update", v1.ScanUpdate)
+	auth.POST("scan/detail", v1.ScanDetail)
+	auth.POST("scan/status", v1.ScanStatus)
+	auth.GET("scan/export", v1.ScanExport)
 	auth.Use(middleware.JwtToken())
 	{
 		// 用户模块的路由接口
