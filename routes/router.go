@@ -47,6 +47,12 @@ func InitRouter() {
 	auth.POST("scan/detail", v1.ScanDetail)
 	auth.POST("scan/status", v1.ScanStatus)
 	auth.GET("scan/export", v1.ScanExport)
+
+	auth.POST("cooperation/create", v1.AddCooperation)
+	auth.POST("cooperation/list", v1.GetCooperation)
+	auth.POST("cooperation/edit", v1.EditCooperation)
+	auth.POST("cooperation/del", v1.DeleteCooperation)
+
 	auth.Use(middleware.JwtToken())
 	{
 		// 用户模块的路由接口
