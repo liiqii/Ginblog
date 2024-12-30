@@ -19,18 +19,6 @@ type Article struct {
 	// Name         string `gorm:"type:varchar(100);not null" json:"name"`
 }
 
-// 连表三张表
-// var userWithProfileAndAddresses []struct {
-//     User
-//     ProfileBio  string `gorm:"column:profiles.bio"`
-//     AddressCity string `gorm:"column:addresses.city"`
-// }
-// db.Table("users").
-//     Select("users.*, profiles.bio, addresses.city").
-//     Joins("LEFT JOIN profiles ON users.id = profiles.user_id").
-//     Joins("LEFT JOIN addresses ON users.id = addresses.user_id").
-//     Scan(&userWithProfileAndAddresses)
-
 // CreateArt 新增文章
 func CreateArt(data *Article) int {
 	err := db.Create(&data).Error

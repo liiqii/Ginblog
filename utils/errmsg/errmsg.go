@@ -18,6 +18,8 @@ const (
 	// 分类模块的错误
 	ERROR_CATENAME_USED  = 3001
 	ERROR_CATE_NOT_EXIST = 3002
+
+	ERROR_COOPERATION_EXIST = 4001
 )
 
 var codeMsg = map[int]string{
@@ -36,6 +38,8 @@ var codeMsg = map[int]string{
 
 	ERROR_CATENAME_USED:  "该分类已存在",
 	ERROR_CATE_NOT_EXIST: "该分类不存在",
+
+	ERROR_COOPERATION_EXIST: "合作模式已存在，请勿重复添加",
 }
 
 func GetErrMsg(code int) string {
